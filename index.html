@@ -3,484 +3,263 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LatestAI Quantum Indexer | المركز القيادي للأرشفة</title>
+    <title>LatestAI Indexer | النسخة الاحترافية السريعة</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&family=IBM+Plex+Sans+Arabic:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap" rel="stylesheet">
     
     <style>
-        :root {
-            --neon-blue: #00d2ff;
-            --neon-purple: #9d50bb;
-            --cyber-dark: #05070a;
-            --glass-bg: rgba(255, 255, 255, 0.03);
-        }
-
         body {
-            font-family: 'IBM Plex Sans Arabic', 'Space Grotesk', sans-serif;
-            background-color: var(--cyber-dark);
-            color: #ffffff;
+            font-family: 'IBM Plex Sans Arabic', sans-serif;
+            background-color: #020617; /* أسود عميق لتحسين التباين */
+            color: #f8fafc;
+            margin: 0;
+            padding: 0;
             overflow-x: hidden;
-            scroll-behavior: smooth;
         }
 
-        /* تأثير الخلفية الديناميكي */
-        .cyber-bg {
-            background: radial-gradient(circle at 50% 50%, #101520 0%, #05070a 100%);
-            background-attachment: fixed;
+        /* تحسين التباين للبطاقات */
+        .card-solid {
+            background: #0f172a;
+            border: 1px solid #1e293b;
+            border-radius: 1.5rem;
         }
 
-        /* لوحات Glassmorphism */
-        .glass {
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        /* تحسين المدخلات لتكون واضحة جداً */
+        input, textarea {
+            background: #020617 !important;
+            color: #ffffff !important;
+            border: 1px solid #334155 !important;
+            font-size: 14px !important;
         }
 
-        .glass:hover {
-            border-color: rgba(0, 210, 255, 0.2);
-            box-shadow: 0 0 30px rgba(0, 210, 255, 0.05);
+        input:focus, textarea:focus {
+            border-color: #3b82f6 !important;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
         }
 
-        /* تأثير الحدود المضيئة (Neon Border) */
-        .neon-border {
-            border: 1px solid transparent;
-            background-image: linear-gradient(var(--cyber-dark), var(--cyber-dark)), 
-                              linear-gradient(to right, var(--neon-blue), var(--neon-purple));
-            background-origin: border-box;
-            background-clip: padding-box, border-box;
+        /* نصوص واضحة */
+        .label-text {
+            color: #94a3b8;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-size: 0.75rem;
+            margin-bottom: 0.5rem;
+            display: block;
         }
 
-        /* تخصيص أشرطة التمرير */
-        .custom-scroll::-webkit-scrollbar { width: 5px; height: 5px; }
-        .custom-scroll::-webkit-scrollbar-track { background: transparent; }
-        .custom-scroll::-webkit-scrollbar-thumb { 
-            background: linear-gradient(to bottom, var(--neon-blue), var(--neon-purple)); 
-            border-radius: 10px; 
+        /* إزالة حركات البطء */
+        * {
+            transition: none !important; /* إلغاء الأنميشن الذي يسبب الثقل */
+        }
+        
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+            transition: background 0.2s !important;
+        }
+        
+        .btn-primary:hover {
+            background: #1d4ed8;
         }
 
-        /* حركات الأنيميشن */
-        @keyframes pulse-cyan {
-            0%, 100% { box-shadow: 0 0 5px rgba(0, 210, 255, 0.5); }
-            50% { box-shadow: 0 0 20px rgba(0, 210, 255, 0.8); }
-        }
-
-        .status-pulse { animation: pulse-cyan 2s infinite; }
-
-        .shimmer {
-            position: relative;
-            overflow: hidden;
-        }
-        .shimmer::after {
-            content: '';
-            position: absolute;
-            top: -50%; left: -50%;
-            width: 200%; height: 200%;
-            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.03), transparent);
-            transform: rotate(45deg);
-            animation: shimmer-effect 3s infinite;
-        }
-        @keyframes shimmer-effect {
-            0% { transform: translateX(-100%) rotate(45deg); }
-            100% { transform: translateX(100%) rotate(45deg); }
-        }
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
     </style>
 </head>
-<body class="cyber-bg min-h-screen">
+<body class="p-4 md:p-8">
 
-    <div id="toastContainer" class="fixed top-6 left-6 z-[100] space-y-3 pointer-events-none"></div>
-
-    <div class="flex flex-col lg:flex-row h-screen">
+    <div class="max-w-5xl mx-auto space-y-6">
         
-        <aside class="w-full lg:w-24 border-l border-white/5 flex lg:flex-col items-center py-8 gap-10 glass z-50">
-            <div class="w-14 h-14 neon-border rounded-2xl flex items-center justify-center shadow-lg group cursor-pointer transition-transform hover:scale-110">
-                <span class="font-bold text-xs tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-cyan-400 to-purple-500">Q-AI</span>
+        <header class="flex justify-between items-center mb-4">
+            <div>
+                <h1 class="text-2xl font-bold text-white">LatestAI <span class="text-blue-500">Indexer Pro</span></h1>
+                <p class="text-slate-400 text-xs">نظام الأرشفة الفوري - عالي الأداء</p>
             </div>
+            <div id="statusTag" class="px-3 py-1 bg-green-500/10 border border-green-500/20 rounded-full">
+                <span class="text-[10px] text-green-500 font-bold">● SYSTEM READY</span>
+            </div>
+        </header>
+
+        <section class="card-solid p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-2">
+                <label class="label-text">GitHub Access Token</label>
+                <input type="password" id="ghToken" class="w-full p-3 rounded-xl" placeholder="أدخل التوكن الخاص بك هنا">
+            </div>
+            <div class="space-y-2">
+                <label class="label-text">Repository Path (User/Repo)</label>
+                <input type="text" id="ghRepo" class="w-full p-3 rounded-xl" placeholder="example: user/my-blog">
+            </div>
+        </section>
+
+        <section class="card-solid p-6">
+            <div class="flex justify-between items-center mb-4">
+                <label class="label-text">قائمة الروابط (رابط واحد لكل سطر)</label>
+                <span id="urlCount" class="text-[10px] bg-blue-500/20 text-blue-400 px-2 py-1 rounded">المكتشف: 0</span>
+            </div>
+            <textarea id="urlInput" class="w-full h-64 p-4 rounded-2xl font-mono custom-scroll" placeholder="https://yourwebsite.com/post-1"></textarea>
             
-            <nav class="flex lg:flex-col gap-8 opacity-40 flex-1 justify-center">
-                <div class="hover:text-cyan-400 transition-colors cursor-pointer p-2">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
-                </div>
-                <div class="hover:text-purple-400 transition-colors cursor-pointer p-2">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
-                </div>
-                <div class="hover:text-pink-400 transition-colors cursor-pointer p-2">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path></svg>
-                </div>
-            </nav>
-
-            <div class="mt-auto pb-4">
-                <img src="https://api.dicebear.com/7.x/bottts/svg?seed=latestai-indexer" class="w-10 h-10 rounded-full border border-white/10" alt="Avatar">
+            <div class="mt-6 flex flex-wrap gap-4">
+                <button onclick="launchSequence()" id="launchBtn" class="flex-1 btn-primary py-4 rounded-xl font-bold flex items-center justify-center gap-3">
+                    <span>إرسال الروابط للأرشفة</span>
+                    <div id="loader" class="hidden w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                </button>
+                <button onclick="clearAll()" class="px-6 py-4 bg-slate-800 hover:bg-red-900/40 rounded-xl text-xs font-bold text-slate-300 transition-all !important">تفريغ المحرر</button>
             </div>
-        </aside>
+        </section>
 
-        <main class="flex-1 overflow-y-auto custom-scroll p-4 md:p-8 lg:p-12">
-            
-            <header class="flex flex-col xl:flex-row justify-between items-start xl:items-center mb-12 gap-8">
-                <div class="space-y-1">
-                    <h1 class="text-5xl font-bold tracking-tighter bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent italic">QUANTUM INDEXER</h1>
-                    <div class="flex items-center gap-3">
-                        <span class="h-[1px] w-12 bg-slate-800"></span>
-                        <p class="text-slate-500 text-[10px] font-bold tracking-[0.4em] uppercase">Autonomous Command Dashboard v5.0</p>
-                    </div>
-                </div>
-
-                <div class="flex flex-wrap gap-4">
-                    <div class="glass px-6 py-3 rounded-2xl border border-white/5 flex items-center gap-4 group">
-                        <div class="flex flex-col items-end leading-none">
-                            <span class="text-[9px] text-slate-500 font-bold uppercase mb-1">System Health</span>
-                            <span class="text-xs font-mono text-green-400">OPERATIONAL</span>
-                        </div>
-                        <div id="healthDot" class="w-3 h-3 bg-green-500 rounded-full status-pulse"></div>
-                    </div>
-                    <div class="glass px-6 py-3 rounded-2xl border border-white/5 flex items-center gap-4">
-                        <div class="flex flex-col items-end leading-none">
-                            <span class="text-[9px] text-slate-500 font-bold uppercase mb-1">Local Time</span>
-                            <span id="liveClock" class="text-xs font-mono text-cyan-400 tracking-widest">00:00:00</span>
-                        </div>
-                    </div>
-                </div>
-            </header>
-
-            <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
-                
-                <div class="xl:col-span-3 space-y-8">
-                    <div class="glass p-8 rounded-[2.5rem] border border-white/5 shimmer">
-                        <div class="flex justify-between items-center mb-8">
-                            <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">تحليلات الأسبوع</h3>
-                            <div class="w-2 h-2 bg-cyan-500 rounded-full animate-pulse"></div>
-                        </div>
-                        <canvas id="activityChart" height="240"></canvas>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 gap-4">
-                        <div class="glass p-6 rounded-[2rem] border border-white/5 group">
-                            <p class="text-[10px] text-slate-500 uppercase font-bold mb-1">إجمالي الروابط المؤرشفة</p>
-                            <div class="flex items-baseline gap-2">
-                                <span class="text-4xl font-bold tracking-tighter text-white" id="totalProcessed">0</span>
-                                <span class="text-cyan-500 text-[10px] font-bold">+12%</span>
-                            </div>
-                            <div class="w-full bg-white/5 h-[2px] mt-4 rounded-full overflow-hidden">
-                                <div id="progressBar" class="bg-gradient-to-r from-cyan-500 to-purple-500 h-full transition-all duration-1000" style="width: 0%"></div>
-                            </div>
-                        </div>
-
-                        <div class="glass p-6 rounded-[2rem] border border-white/5">
-                            <p class="text-[10px] text-slate-500 uppercase font-bold mb-1">نسبة كفاءة الـ API</p>
-                            <div class="flex items-baseline gap-2">
-                                <span class="text-4xl font-bold tracking-tighter text-white">99.2%</span>
-                                <span class="text-green-500 text-[10px] font-bold">STABLE</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="xl:col-span-6 space-y-6">
-                    <div class="glass rounded-[3rem] p-1 border border-white/10 relative overflow-hidden">
-                        <div class="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-600"></div>
-                        
-                        <div class="p-8">
-                            <div class="flex justify-between items-center mb-6 px-2">
-                                <div class="flex items-center gap-2">
-                                    <span class="text-cyan-500 text-lg">●</span>
-                                    <h2 class="text-sm font-bold text-slate-300 uppercase tracking-widest leading-none">محرك الإدخال الكمي</h2>
-                                </div>
-                                <div class="flex gap-4">
-                                    <button onclick="cleanUrlsUI()" class="text-[10px] text-slate-500 hover:text-cyan-400 transition-colors flex items-center gap-2">
-                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                        تصفية الروابط
-                                    </button>
-                                </div>
-                            </div>
-
-                            <textarea id="urlInput" 
-                                class="w-full h-[450px] bg-black/20 border-none text-cyan-50 placeholder:text-slate-800 outline-none resize-none font-mono text-sm leading-relaxed custom-scroll p-6 rounded-3xl"
-                                placeholder="🚀 الصق روابطك هنا (رابط واحد في كل سطر)..."></textarea>
-                            
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
-                                <button onclick="launchSequence()" id="launchBtn" 
-                                    class="group relative overflow-hidden bg-white text-black font-black py-5 rounded-2xl transition-all active:scale-95 shadow-2xl hover:shadow-cyan-500/20">
-                                    <div class="absolute inset-0 bg-cyan-400 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-                                    <div class="relative flex items-center justify-center gap-3">
-                                        <span class="uppercase tracking-widest text-sm">بدء تسلسل الأرشفة</span>
-                                        <div id="loader" class="hidden w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin"></div>
-                                    </div>
-                                </button>
-                                <button onclick="downloadSessionLogs()" class="glass py-5 rounded-2xl hover:bg-white/10 transition-all text-xs font-bold uppercase tracking-[0.2em] border border-white/5">
-                                    تصدير سجلات الجلسة
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="xl:col-span-3 space-y-6">
-                    <div class="glass p-8 rounded-[2.5rem] border border-white/5">
-                        <div class="flex items-center gap-3 mb-8">
-                            <div class="w-1.5 h-4 bg-purple-500 rounded-full"></div>
-                            <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">تشفير الوصول</h3>
-                        </div>
-                        <div class="space-y-6">
-                            <div class="space-y-2 group">
-                                <label class="text-[10px] font-bold text-slate-600 uppercase ml-2 tracking-tighter">GitHub Personal Token</label>
-                                <input type="password" id="ghToken" class="w-full bg-black/40 border border-white/5 rounded-2xl p-4 text-[10px] outline-none focus:border-cyan-500 transition-all font-mono" placeholder="ghp_************************">
-                            </div>
-                            <div class="space-y-2">
-                                <label class="text-[10px] font-bold text-slate-600 uppercase ml-2 tracking-tighter">Repository Context</label>
-                                <input type="text" id="ghRepo" class="w-full bg-black/40 border border-white/5 rounded-2xl p-4 text-[10px] outline-none focus:border-cyan-500 transition-all font-mono italic" placeholder="username/repository-name">
-                            </div>
-                            <p class="text-[9px] text-slate-500 italic text-center px-4">يتم تخزين بيانات الوصول محلياً بشكل مشفر داخل المتصفح فقط.</p>
-                        </div>
-                    </div>
-
-                    <div class="glass rounded-[2.5rem] h-[360px] flex flex-col border border-white/5 overflow-hidden">
-                        <div class="bg-black/40 px-6 py-4 border-b border-white/5 flex justify-between items-center">
-                            <span class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">مخرجات النظام الحية</span>
-                            <div class="flex gap-1.5">
-                                <span class="w-2 h-2 rounded-full bg-red-500/20"></span>
-                                <span class="w-2 h-2 rounded-full bg-yellow-500/20"></span>
-                                <span class="w-2 h-2 rounded-full bg-green-500/20"></span>
-                            </div>
-                        </div>
-                        <div id="terminal" class="flex-1 overflow-y-auto font-mono text-[9px] text-slate-500 p-6 space-y-2 custom-scroll bg-black/10">
-                            <p class="text-blue-900/40">>> QUANTUM OS v5.0.0 INITIALIZED...</p>
-                            <p class="text-blue-900/40">>> WAITING FOR INPUT SEQUENCE...</p>
-                        </div>
-                    </div>
-                </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="card-solid p-6">
+                <p class="label-text italic">إجمالي المعالجة</p>
+                <h3 class="text-3xl font-bold text-white" id="totalProcessed">0</h3>
             </div>
-        </main>
+            <div class="card-solid p-6 md:col-span-2">
+                <canvas id="activityChart" height="80"></canvas>
+            </div>
+        </div>
+
+        <section class="card-solid overflow-hidden">
+            <div class="bg-slate-900/50 px-4 py-2 border-b border-slate-800 flex justify-between items-center">
+                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">مخرجات النظام (Logs)</span>
+                <button onclick="copyLogs()" class="text-[9px] text-blue-400 hover:underline">نسخ السجل</button>
+            </div>
+            <div id="terminal" class="h-40 overflow-y-auto p-4 font-mono text-[11px] space-y-1 custom-scroll bg-black/20">
+                <p class="text-slate-600">>> النظام في انتظار المدخلات...</p>
+            </div>
+        </section>
+
     </div>
 
     <script>
-        let myChart;
         const ui = {
             input: document.getElementById('urlInput'),
             terminal: document.getElementById('terminal'),
             btn: document.getElementById('launchBtn'),
             total: document.getElementById('totalProcessed'),
-            progress: document.getElementById('progressBar'),
             token: document.getElementById('ghToken'),
             repo: document.getElementById('ghRepo'),
             loader: document.getElementById('loader'),
-            health: document.getElementById('healthDot')
+            count: document.getElementById('urlCount')
         };
 
-        // 1. إدارة الوقت (Clock)
-        function updateClock() {
-            const now = new Date();
-            document.getElementById('liveClock').innerText = now.toLocaleTimeString('en-US', { hour12: false });
-        }
-        setInterval(updateClock, 1000);
+        let myChart;
 
-        // 2. إدارة الرسوم البيانية (Charts)
+        // تحديث العداد
+        ui.input.addEventListener('input', () => {
+            const urls = getUrls();
+            ui.count.innerText = `المكتشف: ${urls.length}`;
+        });
+
+        function getUrls() {
+            return ui.input.value.split('\n').map(u => u.trim()).filter(u => u.startsWith('http'));
+        }
+
+        function addLog(msg, color = 'text-slate-500') {
+            const time = new Date().toLocaleTimeString();
+            ui.terminal.innerHTML += `<p class="${color}">[${time}] ${msg}</p>`;
+            // التمرير لأسفل فقط إذا كان المستخدم قريباً من القاع (منع القفز المزعج)
+            ui.terminal.scrollTop = ui.terminal.scrollHeight;
+        }
+
+        async function launchSequence() {
+            const urls = getUrls();
+            const config = { token: ui.token.value.trim(), repo: ui.repo.value.trim() };
+
+            if (!urls.length || !config.token || !config.repo) {
+                alert("تأكد من إدخال الروابط والتوكن واسم المستودع.");
+                return;
+            }
+
+            // Save settings
+            localStorage.setItem('idx_tk', config.token);
+            localStorage.setItem('idx_rp', config.repo);
+
+            ui.btn.disabled = true;
+            ui.loader.classList.remove('hidden');
+            addLog(`بدء معالجة ${urls.length} رابط...`, 'text-blue-400');
+
+            try {
+                // 1. Get SHA
+                const res = await fetch(`https://api.github.com/repos/${config.repo}/contents/urls.txt`, {
+                    headers: { "Authorization": `token ${config.token}` }
+                });
+                if (!res.ok) throw new Error("لم يتم العثور على ملف urls.txt أو التوكن خاطئ.");
+                const data = await res.json();
+
+                // 2. Update File
+                const update = await fetch(`https://api.github.com/repos/${config.repo}/contents/urls.txt`, {
+                    method: "PUT",
+                    headers: { "Authorization": `token ${config.token}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        message: "🚀 Fast Indexer Sync",
+                        content: btoa(unescape(encodeURIComponent(urls.join('\n')))),
+                        sha: data.sha
+                    })
+                });
+
+                if (update.ok) {
+                    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+                    const newTotal = parseInt(ui.total.innerText) + urls.length;
+                    ui.total.innerText = newTotal;
+                    localStorage.setItem('idx_total', newTotal);
+                    
+                    updateChart(urls.length);
+                    addLog("✅ تم الإرسال بنجاح!", "text-green-400 font-bold");
+                    ui.input.value = "";
+                    ui.count.innerText = "المكتشف: 0";
+                } else {
+                    throw new Error("فشل في تحديث الملف.");
+                }
+            } catch (err) {
+                addLog(`❌ خطأ: ${err.message}`, "text-red-500");
+            } finally {
+                ui.btn.disabled = false;
+                ui.loader.classList.add('hidden');
+            }
+        }
+
+        function updateChart(count) {
+            const day = new Date().getDay();
+            let history = JSON.parse(localStorage.getItem('idx_history') || '[0,0,0,0,0,0,0]');
+            history[day] += count;
+            localStorage.setItem('idx_history', JSON.stringify(history));
+            myChart.data.datasets[0].data = history;
+            myChart.update();
+        }
+
         function initChart() {
             const ctx = document.getElementById('activityChart').getContext('2d');
-            const storedHistory = JSON.parse(localStorage.getItem('idx_history') || '[0, 0, 0, 0, 0, 0, 0]');
-            
+            const data = JSON.parse(localStorage.getItem('idx_history') || '[0,0,0,0,0,0,0]');
             myChart = new Chart(ctx, {
-                type: 'line',
+                type: 'bar',
                 data: {
                     labels: ['S', 'M', 'T', 'W', 'T', 'F', 'S'],
                     datasets: [{
-                        label: 'Indexing activity',
-                        data: storedHistory,
-                        borderColor: '#00d2ff',
-                        borderWidth: 2,
-                        pointBackgroundColor: '#00d2ff',
-                        pointRadius: 0,
-                        pointHoverRadius: 5,
-                        tension: 0.4,
-                        fill: true,
-                        backgroundColor: (context) => {
-                            const gradient = context.chart.ctx.createLinearGradient(0, 0, 0, 400);
-                            gradient.addColorStop(0, 'rgba(0, 210, 255, 0.15)');
-                            gradient.addColorStop(1, 'rgba(0, 210, 255, 0)');
-                            return gradient;
-                        }
+                        data: data,
+                        backgroundColor: '#3b82f6',
+                        borderRadius: 5
                     }]
                 },
-                options: {
+                options: { 
                     responsive: true,
-                    maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
-                    scales: {
-                        y: { display: false, beginAtZero: true },
-                        x: { 
-                            grid: { display: false },
-                            ticks: { color: '#475569', font: { size: 9, family: 'Space Grotesk' } } 
-                        }
-                    }
+                    scales: { y: { display: false }, x: { grid: { display: false }, ticks: { color: '#64748b' } } }
                 }
             });
         }
 
-        // 3. المخرجات واللوقات (Logging)
-        function addLog(msg, type = 'info') {
-            const colors = {
-                info: 'text-slate-600',
-                success: 'text-cyan-400 font-bold',
-                error: 'text-red-500',
-                warning: 'text-yellow-500'
-            };
-            const time = new Date().toLocaleTimeString();
-            ui.terminal.innerHTML += `<p class="${colors[type]} leading-relaxed">[${time}] >> ${msg}</p>`;
-            ui.terminal.scrollTop = ui.terminal.scrollHeight;
-        }
+        function clearAll() { ui.input.value = ""; ui.count.innerText = "المكتشف: 0"; }
+        function copyLogs() { navigator.clipboard.writeText(ui.terminal.innerText); alert("تم نسخ السجل."); }
 
-        function showToast(message, type = 'success') {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            toast.className = `glass px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-4 border-l-4 transition-all duration-500 translate-x-[-100%] opacity-0 pointer-events-auto ${type === 'success' ? 'border-cyan-500' : 'border-red-500'}`;
-            
-            toast.innerHTML = `
-                <div class="w-8 h-8 rounded-full flex items-center justify-center ${type === 'success' ? 'bg-cyan-500/10 text-cyan-500' : 'bg-red-500/10 text-red-500'}">
-                    ${type === 'success' ? '✓' : '✕'}
-                </div>
-                <div class="text-[11px] font-bold text-slate-200 tracking-wide">${message}</div>
-            `;
-            
-            container.appendChild(toast);
-            setTimeout(() => { toast.classList.remove('translate-x-[-100%]', 'opacity-0'); }, 100);
-            setTimeout(() => {
-                toast.classList.add('translate-x-[-100%]', 'opacity-0');
-                setTimeout(() => toast.remove(), 500);
-            }, 4000);
-        }
-
-        // 4. معالجة الروابط (URL Logic)
-        function getUrls() {
-            return ui.input.value.split(/[\n,]+/)
-                .map(u => u.trim())
-                .filter(u => u.startsWith('http'))
-                .filter((v, i, a) => a.indexOf(v) === i);
-        }
-
-        function cleanUrlsUI() {
-            const urls = getUrls();
-            ui.input.value = urls.join('\n');
-            addLog(`تمت تصفية الروابط. المتبقي: ${urls.length} رابط فريد.`, 'warning');
-        }
-
-        // 5. العملية الأساسية (The Launch Sequence)
-        async function launchSequence() {
-            const urls = getUrls();
-            const config = {
-                token: ui.token.value.trim(),
-                repo: ui.repo.value.trim()
-            };
-
-            if (urls.length === 0) return showToast("يرجى إدخال روابط صحيحة أولاً!", "error");
-            if (!config.token || !config.repo) return showToast("بيانات GitHub ناقصة!", "error");
-
-            // حفظ الإعدادات
-            localStorage.setItem('q_tk', config.token);
-            localStorage.setItem('q_rp', config.repo);
-
-            // تحضير الـ UI
-            ui.btn.disabled = true;
-            ui.loader.classList.remove('hidden');
-            addLog(`بدء تسلسل الاتصال السحابي بـ GitHub...`, 'info');
-            ui.health.classList.replace('bg-green-500', 'bg-yellow-500');
-
-            try {
-                // الخطوة 1: جلب SHA لملف urls.txt
-                addLog(`طلب مفتاح التزامن (SHA) للملف...`);
-                const fileRes = await fetch(`https://api.github.com/repos/${config.repo}/contents/urls.txt`, {
-                    headers: { "Authorization": `token ${config.token}` }
-                });
-
-                if (!fileRes.ok) {
-                    if (fileRes.status === 404) throw new Error("الملف urls.txt غير موجود في المستودع.");
-                    if (fileRes.status === 401) throw new Error("التوكن غير صالح (Unauthorized).");
-                    throw new Error("خطأ في الاتصال بالمستودع.");
-                }
-
-                const fileData = await fileRes.json();
-                
-                // الخطوة 2: تحديث الملف بالروابط الجديدة
-                addLog(`جاري ضغط وتشفير ${urls.length} رابط ونقلهم...`);
-                const updateRes = await fetch(`https://api.github.com/repos/${config.repo}/contents/urls.txt`, {
-                    method: "PUT",
-                    headers: { 
-                        "Authorization": `token ${config.token}`,
-                        "Content-Type": "application/json" 
-                    },
-                    body: JSON.stringify({
-                        message: `🌀 Quantum Sync: ${urls.length} links`,
-                        content: btoa(unescape(encodeURIComponent(urls.join('\n')))),
-                        sha: fileData.sha
-                    })
-                });
-
-                if (updateRes.ok) {
-                    // النجاح الاحتفالي
-                    confetti({
-                        particleCount: 150,
-                        spread: 70,
-                        origin: { y: 0.7 },
-                        colors: ['#00d2ff', '#9d50bb', '#ffffff']
-                    });
-
-                    // تحديث الإحصائيات
-                    const count = urls.length;
-                    const currentTotal = parseInt(ui.total.innerText) + count;
-                    ui.total.innerText = currentTotal;
-                    localStorage.setItem('q_total', currentTotal);
-                    
-                    // تحديث الشارت
-                    const day = new Date().getDay();
-                    let history = JSON.parse(localStorage.getItem('idx_history') || '[0,0,0,0,0,0,0]');
-                    history[day] += count;
-                    localStorage.setItem('idx_history', JSON.stringify(history));
-                    myChart.data.datasets[0].data = history;
-                    myChart.update();
-
-                    addLog(`اكتملت العملية بنجاح! تم تشغيل GitHub Action.`, 'success');
-                    showToast(`تم إرسال ${count} رابط للأرشفة!`);
-                    ui.input.value = "";
-                    ui.progress.style.width = "100%";
-                    setTimeout(() => ui.progress.style.width = "0%", 2000);
-                } else {
-                    const errJson = await updateRes.json();
-                    throw new Error(errJson.message);
-                }
-
-            } catch (err) {
-                addLog(`فشل التسلسل: ${err.message}`, 'error');
-                showToast(err.message, "error");
-                ui.health.classList.replace('bg-yellow-500', 'bg-red-500');
-            } finally {
-                ui.btn.disabled = false;
-                ui.loader.classList.add('hidden');
-                setTimeout(() => {
-                    ui.health.className = "w-3 h-3 bg-green-500 rounded-full status-pulse";
-                }, 3000);
-            }
-        }
-
-        function downloadSessionLogs() {
-            const blob = new Blob([ui.terminal.innerText], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `quantum-logs-${Date.now()}.txt`;
-            a.click();
-            addLog("تم تصدير سجلات النظام.");
-        }
-
-        // تحضير البيانات عند التشغيل
         window.onload = () => {
-            ui.token.value = localStorage.getItem('q_tk') || '';
-            ui.repo.value = localStorage.getItem('q_rp') || '';
-            ui.total.innerText = localStorage.getItem('q_total') || '0';
+            ui.token.value = localStorage.getItem('idx_tk') || '';
+            ui.repo.value = localStorage.getItem('idx_rp') || '';
+            ui.total.innerText = localStorage.getItem('idx_total') || '0';
             initChart();
-            updateClock();
-            addLog("نظام Quantum الموحد جاهز للتشغيل...");
         };
     </script>
 </body>
