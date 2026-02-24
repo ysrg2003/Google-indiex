@@ -1,0 +1,45 @@
+name: Google Indexing Automation
+
+# تشغيل الأكشن عند حدوث تغيير في ملف urls.txt فقط
+on:
+  push:
+    paths:
+      - 'urls.txt'
+  # إمكانية تشغيل الأكشن يدوياً من تبويب Actions
+  workflow_dispatch:
+
+jobs:
+  run-indexer:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 1. سحب الكود من المستودع
+        uses: actions/checkout@v4
+
+      - name: 2. إعداد بيئة بايثون
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+          # تفعيل الكاش لتسريع العمليات المستقبلية
+          cache: 'pip'
+
+      - name: 3. تثبيت المكتبات اللازمة
+        run: |
+          python -m pip install --upgrade pip
+          pip install oauth2client requests
+
+      - name: 4. تشغيل سكربت الأرشفة
+        env:
+          # سحب مفتاح جوجل من Secrets الخاص بالمستودع
+          GOOGLE_INDEXING_JSON: ${{ secrets.GOOGLE_INDEXING_JSON }}
+        run: python indexer.py
+
+      - name: 5. تنظيف ملف الروابط (اختياري)
+        # هذه الخطوة تفرغ الملف بعد الأرشفة لتجهيزه للدفعة القادمة
+        run: |
+          echo "" > urls.txt
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add urls.txt
+          git commit -m "حذف الروابط المؤرشفة وتصفير الملف" || echo "لا توجد تغييرات للالتزام بها"
+          git push
